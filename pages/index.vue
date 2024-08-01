@@ -1,22 +1,10 @@
 <template>
-  <!--  <div>-->
-  <!--    <h1>ЧТУП "ВитСбытСервис"</h1>-->
-  <!--    <p>{{ dynamicMessage }}</p>-->
-  <!--    <button @click="changeMessage">Изменить сообщение</button>-->
-  <!--    <div class="dynamic-box" :style="{ backgroundColor: boxColor }"></div>-->
-  <!--  </div>-->
+  <ImageCarousel/>
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
 
-const dynamicMessage = ref('Начальное сообщение');
-const boxColor = ref('#42b983');
-
-const changeMessage = () => {
-  dynamicMessage.value = 'Сообщение изменено!';
-  boxColor.value = boxColor.value === '#42b983' ? '#35495e' : '#42b983';
-};
+import ImageCarousel from "~/components/ImageCarousel.vue";
 </script>
 
 <style scoped>

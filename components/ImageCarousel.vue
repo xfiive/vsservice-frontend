@@ -2,7 +2,7 @@
   <div class="carousel">
     <div class="carousel-inner" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
       <div v-for="(image, index) in images" :key="index" class="carousel-item">
-        <img :src="image" class="carousel-image" alt=""/>
+        <img :src="image" class="carousel-image" alt="img"/>
       </div>
     </div>
     <button class="carousel-control prev" @click="prevImage">‹</button>

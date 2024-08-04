@@ -1,14 +1,8 @@
 <template>
   <div>
-    <header>
-      <NavBar/>
-    </header>
-    <main>
-      <nuxt/>
-    </main>
-    <footer>
-      <p>© 2024 ЧТУП "ВитСбытСервис". Все права защищены.</p>
-    </footer>
+    <NavBar/>
+    <Nuxt/>
+    <Footer/>
   </div>
 </template>
 
@@ -37,16 +31,8 @@ main {
   padding: 20px;
 }
 
-footer {
-  background: #35495e;
-  color: #fff;
-  text-align: center;
-  padding: 10px 0;
-  position: fixed;
-  width: 100%;
-  bottom: 0;
-}
 </style>
 <script setup lang="ts">
 import NavBar from "~/components/NavBar.vue";
+import Footer from "~/components/Footer.vue";
 </script>

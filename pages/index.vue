@@ -1,11 +1,7 @@
 <template>
-  <ImageCarousel/>
 </template>
 
-<script setup lang="ts">
-
-import ImageCarousel from "~/components/ImageCarousel.vue";
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 h1 {
@@ -30,10 +26,4 @@ button:hover {
   background-color: #35495e;
 }
 
-.dynamic-box {
-  width: 100px;
-  height: 100px;
-  margin-top: 20px;
-  transition: background-color 0.5s;
-}
 </style>

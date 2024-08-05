@@ -4,12 +4,12 @@
 
 <template>
   <nav class="navbar">
+
     <nuxt-link to="/" class="nav-link" exact>Главная</nuxt-link>
-    <nuxt-link to="/about" class="nav-link" exact>О нас</nuxt-link>
-    <nuxt-link to="/contacts" class="nav-link" exact>Контакты</nuxt-link>
-    <nuxt-link to="/license" class="nav-link" exact>Лицензия</nuxt-link>
     <nuxt-link to="/services" class="nav-link" exact>Услуги</nuxt-link>
     <nuxt-link to="/catalog" class="nav-link" exact>Каталог товаров</nuxt-link>
+    <nuxt-link to="/about" class="nav-link" exact>О нас</nuxt-link>
+    <nuxt-link to="/contacts" class="nav-link" exact>Контакты</nuxt-link>
   </nav>
 </template>
 

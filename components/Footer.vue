@@ -4,23 +4,26 @@
 <template>
   <div class="wrapper">
     <main class="content">
+      <!-- Ваш основной контент здесь -->
     </main>
     <footer>
       <div class="footer">
         <div class="footer-section contacts">
-          <p><strong>Витебск</strong></p>
+          <p class="header"><strong>Контактные данные Витебск:</strong></p>
           <p><a href="tel:+375212555500">(0212) 55-55-00</a></p>
           <p><a href="tel:+375296241352">(29) 624-13-52</a></p>
           <p><a href="tel:+375297122505">(29) 712-25-05</a></p>
           <p class="email"><a href="mailto:vitsbs@mail.ru">vitsbs@mail.ru</a></p>
 
-          <p><strong>Минск</strong></p>
+          <p class="header"><strong>Контактные данные Минск:</strong></p>
           <p><a href="tel:+375173434384">(017) 343-43-84</a></p>
           <p><a href="tel:+375447530025">(44) 753-00-25</a></p>
           <p><a href="tel:+375297530025">(29) 753-00-25</a></p>
           <p class="email"><a href="mailto:minsk-sbs@mail.ru">minsk-sbs@mail.ru</a></p>
+
+          <nuxt-link to="/"><p>© 2008-2024 ЧП "ВитСбытСервис"</p></nuxt-link>
         </div>
-        <div class="footer-section">
+        <div class="footer-section catalog">
           <h3>Каталог товаров</h3>
           <ul>
             <li>
@@ -40,10 +43,11 @@
             </li>
           </ul>
         </div>
-        <div class="footer-section">
+        <div class="footer-section hours">
           <h3>ВРЕМЯ РАБОТЫ</h3>
           <p>С 8:00 до 16:00 в будние дни</p>
           <p>Выходные дни - Суббота и Воскресенье</p>
+          <p class="header"><strong>Ваша безопасность - наша забота</strong></p>
         </div>
       </div>
     </footer>
@@ -86,6 +90,13 @@ footer {
   flex: 1;
   margin: 0 1em;
   min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.contacts .header, .catalog h3, .hours h3 {
+  margin-top: 0;
 }
 
 .logo-img {

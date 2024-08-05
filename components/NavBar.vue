@@ -4,7 +4,6 @@
 
 <template>
   <nav class="navbar">
-
     <nuxt-link to="/" class="nav-link" exact>Главная</nuxt-link>
     <nuxt-link to="/services" class="nav-link" exact>Услуги</nuxt-link>
     <nuxt-link to="/catalog" class="nav-link" exact>Каталог товаров</nuxt-link>

@@ -19,38 +19,34 @@
 </template>
 
 <script>
-import axios from 'axios';
 
 export default {
   data() {
     return {
       username: '',
       password: '',
-      error: null
+      error: null,
     };
   },
   methods: {
     async login() {
       this.error = null;
       try {
-        const response = await axios.post('http://localhost:8081/api/admin/login', {
+        const api = (await import('~/plugins/axios')).default;
+        const response = await api.post('/admin/login', {
           username: this.username,
-          password: this.password
+          password: this.password,
         });
-
-
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-
-        console.log('access_token: ' + response.data.access_token);
-        console.log('refresh_token: ' + response.data.refresh_token);
-        // this.$router.push('/admin/dashboard');
+        console.log('Login successful');
       } catch (err) {
+        console.log('err: ' + err.message);
         this.error = 'Invalid username or password. Please try again.';
       }
-    }
-  }
+    },
+  },
 };
+
+
 </script>
 
 <style scoped>

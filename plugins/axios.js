@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-export default ({$axios, store, redirect}) => {
+export default ({store, redirect}, inject) => {
   const api = axios.create({
     baseURL: 'http://localhost:8081/api',
-    withCredentials: true, // Включаем отправку cookies
+    withCredentials: true,
   });
 
   api.interceptors.response.use(
@@ -15,13 +15,12 @@ export default ({$axios, store, redirect}) => {
         originalRequest._retry = true;
 
         try {
-          // Попытка обновить токен
           await api.post('/admin/refresh');
-          // Повторяем запрос с обновленным токеном
+
           return api(originalRequest);
         } catch (refreshError) {
-          // Если обновление не удалось, очищаем сессию и перенаправляем на страницу входа
           await store.dispatch('logout');
+
           redirect('/login');
           return Promise.reject(refreshError);
         }
@@ -31,6 +30,5 @@ export default ({$axios, store, redirect}) => {
     }
   );
 
-  // Добавляем API в контекст Nuxt.js
-  $axios.defaults = api.defaults;
+  inject('api', api);
 };

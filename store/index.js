@@ -1,16 +1,26 @@
 export const actions = {
   logout({commit}) {
-    commit('clearUserData');
+    commit('clearUser');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-
-    document.cookie = 'access_token=; Max-Age=-99999999;';
-    document.cookie = 'refresh_token=; Max-Age=-99999999;';
-  }
+    this.$router.push('/admin/login');
+  },
 };
 
 export const mutations = {
-  clearUserData(state) {
+  setUser(state, user) {
+    state.user = user;
+  },
+  clearUser(state) {
     state.user = null;
-  }
+  },
+
 };
+
+export const state = () => ({
+  user: {
+    username: '',
+  },
+});
+
+

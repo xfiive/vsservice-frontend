@@ -19,7 +19,6 @@
 </template>
 
 <script>
-
 export default {
   data() {
     return {
@@ -32,22 +31,27 @@ export default {
     async login() {
       this.error = null;
       try {
-        const api = (await import('~/plugins/axios')).default;
-        const response = await api.post('/admin/login', {
+        const response = await this.$api.post('/admin/login', {
           username: this.username,
           password: this.password,
         });
-        console.log('Login successful');
+
+        console.log('Admin name: ' + response.data.name);
+
+        this.$store.commit('setUser', {username: response.data.name});
+
+        await this.$router.push('/admin/dashboard');
       } catch (err) {
         console.log('err: ' + err.message);
+
         this.error = 'Invalid username or password. Please try again.';
       }
     },
   },
+
 };
-
-
 </script>
+
 
 <style scoped>
 .login-form {

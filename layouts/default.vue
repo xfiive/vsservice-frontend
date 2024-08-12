@@ -33,6 +33,6 @@ main {
 
 </style>
 <script setup lang="ts">
-import NavBar from "~/components/NavBar.vue";
-import Footer from "~/components/Footer.vue";
+import NavBar from "~/components/background-components/NavBar.vue";
+import Footer from "~/components/background-components/Footer.vue";
 </script>

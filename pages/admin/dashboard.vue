@@ -1,11 +1,11 @@
 <template>
-  <div class="admin-dashboard" v-if="user">
-    <h1>Welcome, {{ user.username }}!</h1>
+  <div class="admin-dashboard" v-if="user && user.name">
+    <h1>Welcome, {{ user.name }}!</h1>
     <p>You have successfully logged in as an administrator.</p>
 
     <div class="actions">
       <button @click="goToProducts">Manage Products</button>
-      <button @click="goToUsers">Manage Users</button>
+      <!--      <button @click="goToUsers">Manage Users</button>-->
       <button @click="logout">Logout</button>
     </div>
   </div>
@@ -15,15 +15,17 @@
 
 <script>
 export default {
+  layout: 'admin',
   computed: {
     user() {
+      console.log('Computed user: ' + this.$store.state.user);
       return this.$store.state.user;
     },
   },
   mounted() {
     console.log('Mounted user:', this.user);
-    if (!this.user || !this.user.username) {
-      this.$router.push('/login');
+    if (!this.user || !this.user.name) {
+      this.$router.push('/admin/login');
     }
   },
   methods: {
@@ -44,7 +46,6 @@ export default {
     },
   },
 };
-
 </script>
 
 <style scoped>

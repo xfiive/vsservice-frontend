@@ -1,6 +1,4 @@
-<script setup lang="ts" xmlns="http://www.w3.org/1999/html">
-
-</script>
+<script setup lang="ts" xmlns="http://www.w3.org/1999/html"></script>
 
 <template>
   <div class="about-license">

@@ -18,9 +18,7 @@ export const mutations = {
 };
 
 export const state = () => ({
-  user: {
-    username: '',
-  },
+  user: null,
 });
 
 

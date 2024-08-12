@@ -20,6 +20,7 @@
 
 <script>
 export default {
+  layout: 'admin',
   data() {
     return {
       username: '',
@@ -36,9 +37,10 @@ export default {
           password: this.password,
         });
 
-        console.log('Admin name: ' + response.data.name);
+        console.log('Admin data:', response.data);
 
-        this.$store.commit('setUser', {username: response.data.name});
+        this.$store.commit('setUser', response.data);
+        console.log('Stored user:', this.$store.state.user);
 
         await this.$router.push('/admin/dashboard');
       } catch (err) {
@@ -48,6 +50,7 @@ export default {
       }
     },
   },
+
 
 };
 </script>

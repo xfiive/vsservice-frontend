@@ -76,8 +76,14 @@
     <div v-else class="product-details">
       <h2>Product Added Successfully!</h2>
       <div class="product-card">
-        <img :src="`data:image/png;base64,${addedProduct.imageBase64}`" alt="Product Image"/>
+        <!--        <img :src="addedProduct.imageBase64" alt="Product Image"/> -->
+        <!--        <img :src="`data:image/png;base64,${addedProduct.imageBase64}`" alt="Product Image"/>-->
+        <img
+            :src="addedProduct.imageBase64.startsWith('data:image/') ? addedProduct.imageBase64 : `data:image/png;base64,${addedProduct.imageBase64}`"
+            alt="Product Image"/>
+        <!--        <img :src="`data:image/png;base64,${addedProduct.imageBase64}`" alt="Product Image"/>-->
         <h3>{{ addedProduct.name }}</h3>
+        <p><strong>ID:</strong> {{ addedProduct.id }}</p>
         <p>Price: BYN{{ addedProduct.price }}</p>
         <ul>
           <li v-for="(property, index) in addedProduct.properties" :key="index">
@@ -88,7 +94,7 @@
         <button @click="redirectToProducts">Go to Products List</button>
       </div>
     </div>
-
+    <button @click="redirectToProducts">Go to Products List</button>
   </div>
 </template>
 

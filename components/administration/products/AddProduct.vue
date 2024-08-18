@@ -2,44 +2,75 @@
   <div class="add-product-page">
     <h1>Add New Product</h1>
 
-    <form v-if="!productAdded" @submit.prevent="submitProduct">
+    <form
+        v-if="!productAdded"
+        @submit.prevent="validateForm"
+        @paste="handlePaste"
+        @dragover.prevent
+        @drop.prevent="handleDrop"
+    >
       <div class="form-group">
         <label for="name">Product Name</label>
-        <input type="text" id="name" v-model="product.name" required/>
+        <input
+            type="text"
+            id="name"
+            v-model="product.name"
+            required
+            @input="validateName"
+        />
+        <span v-if="nameError" class="error">{{ nameError }}</span>
       </div>
 
       <div class="form-group">
         <label for="price">Product Price</label>
-        <input type="number" id="price" v-model="product.price" required/>
+        <input
+            type="text"
+            id="price"
+            v-model="product.price"
+            @input="validatePrice"
+            required
+        />
+        <span v-if="priceError" class="error">{{ priceError }}</span>
       </div>
 
       <div class="form-group">
         <label for="image">Product Image (Base64)</label>
-        <textarea id="image" v-model="product.imageBase64" required></textarea>
+        <div v-if="!imageBase64" class="dropzone">
+          <input type="file" @change="onFileChange"/>
+          <p>Drag and drop an image, paste it, or select a file.</p>
+        </div>
+        <div v-else>
+          <img :src="imageBase64" alt="Product Image" class="product-image"/>
+          <button @click="removeImage">Remove Image</button>
+        </div>
       </div>
 
       <div class="properties">
         <h3>Properties</h3>
         <div v-for="(property, index) in properties" :key="index" class="property-group">
           <input
-            type="text"
-            v-model="property.name"
-            placeholder="Property Name"
-            required
+              type="text"
+              v-model="property.name"
+              placeholder="Property Name"
+              required
+              @input="validateProperty(index)"
           />
           <span> : </span>
           <input
-            type="text"
-            v-model="property.description"
-            placeholder="Property Description"
-            required
+              type="text"
+              v-model="property.description"
+              placeholder="Property Description"
+              required
+              @input="validateProperty(index)"
           />
           <button @click.prevent="removeProperty(index)">Remove</button>
+          <span v-if="propertyErrors[index]" class="error">{{ propertyErrors[index] }}</span>
         </div>
         <button @click.prevent="addProperty">Add Property</button>
       </div>
 
       <button type="submit">Add Product</button>
+      <span v-if="formError" class="error">{{ formError }}</span>
     </form>
 
     <div v-else class="product-details">
@@ -54,19 +85,23 @@
           </li>
         </ul>
         <button @click="resetForm">Add Another Product</button>
+        <button @click="redirectToProducts">Go to Products List</button>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
+import Pica from 'pica';
+
 export default {
   layout: 'admin',
   data() {
     return {
       product: {
         name: '',
-        price: 0,
+        price: '',
         imageBase64: '',
       },
       properties: [
@@ -74,31 +109,74 @@ export default {
       ],
       productAdded: false,
       addedProduct: null,
+      imageBase64: '',
+      supportedFormats: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'],
+      maxWidth: 1280,
+      maxHeight: 1024,
+      nameError: null,
+      priceError: null,
+      propertyErrors: [],
+      formError: null,
     };
   },
   methods: {
-    addProperty() {
-      this.properties.push({name: '', description: ''});
+    validateName() {
+      if (!this.product.name) {
+        this.nameError = 'Product name is required.';
+      } else {
+        this.nameError = null;
+      }
     },
-    removeProperty(index) {
-      this.properties.splice(index, 1);
+    validatePrice() {
+      const price = this.product.price;
+      if (price === '') {
+        this.priceError = 'Price is required.';
+      } else if (!/^\d*\.?\d*$/.test(price)) {
+        this.priceError = 'Price must be a positive number.';
+      } else if (parseFloat(price) < 0) {
+        this.priceError = 'Price cannot be negative.';
+      } else {
+        this.priceError = null;
+      }
+    },
+    validateProperty(index) {
+      const property = this.properties[index];
+      if (!property.name || !property.description) {
+        this.propertyErrors[index] = 'Both name and description are required.';
+      } else {
+        this.$set(this.propertyErrors, index, null);
+      }
+    },
+    validateForm() {
+      this.validateName();
+      this.validatePrice();
+      this.properties.forEach((_, index) => this.validateProperty(index));
+
+      if (this.nameError || this.priceError || this.propertyErrors.some(error => error !== null)) {
+        this.formError = 'Please fix the errors in the form before submitting.';
+        return;
+      }
+
+      this.formError = null;
+      this.submitProduct();
     },
     async submitProduct() {
       try {
         const propertiesList = this.properties.map(
-          (prop) => `${prop.name} : ${prop.description}`
+            (prop) => `${prop.name} : ${prop.description}`
         );
 
         const product = {
           ...this.product,
           properties: propertiesList,
+          imageBase64: this.imageBase64,
         };
 
         console.log('Properties list created:', propertiesList);
 
         const response = await this.$api.post('/products', product);
 
-        console.log('Product added successfully');
+        console.log('Product added successfully:', response.data);  // Добавляем вывод всех данных продукта
 
         this.addedProduct = response.data;
         this.productAdded = true;
@@ -107,15 +185,88 @@ export default {
         console.error('Failed to add product:', error.message);
       }
     },
+    redirectToProducts() {
+      this.$router.push('/admin/products');
+    },
+    onFileChange(e) {
+      const file = e.target.files[0];
+      if (!this.supportedFormats.includes(file.type)) {
+        alert('Please select a valid image file (jpg, png, gif, bmp, webp).');
+        e.target.value = null;
+        return;
+      }
+      this.resizeImage(file);
+    },
+    handlePaste(event) {
+      const clipboardData = event.clipboardData || window.clipboardData;
+      const items = clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (!this.supportedFormats.includes(file.type)) {
+            alert('Please paste a valid image file (jpg, png, gif, bmp, webp).');
+            return;
+          }
+          this.resizeImage(file);
+        }
+      }
+    },
+    handleDrop(event) {
+      const file = event.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        if (!this.supportedFormats.includes(file.type)) {
+          alert('Please drop a valid image file (jpg, png, gif, bmp, webp).');
+          return;
+        }
+        this.resizeImage(file);
+      } else {
+        alert('Please drop a valid image file (jpg, png, gif, bmp, webp).');
+      }
+    },
+    resizeImage(file) {
+      const pica = Pica();
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const targetWidth = 1280;
+          const targetHeight = 1024;
+
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+
+          pica.resize(img, canvas)
+              .then(result => pica.toBlob(result, 'image/png', 1.0))
+              .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  this.imageBase64 = reader.result;
+                };
+                reader.readAsDataURL(blob);
+              })
+              .catch(error => {
+                console.error("Error resizing image:", error);
+              });
+        };
+      };
+      reader.readAsDataURL(file);
+    },
+    removeImage() {
+      this.imageBase64 = '';
+    },
     resetForm() {
       this.product = {
         name: '',
-        price: 0,
+        price: '',
         imageBase64: '',
       };
       this.properties = [{name: '', description: ''}];
       this.productAdded = false;
       this.addedProduct = null;
+      this.imageBase64 = '';
     },
   },
 };
@@ -150,6 +301,13 @@ export default {
   border-radius: 4px;
 }
 
+.dropzone {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .properties {
   margin-bottom: 20px;
 }
@@ -176,6 +334,12 @@ export default {
 
 .property-group button:hover {
   background-color: #c0392b;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
 }
 
 button[type="submit"] {
@@ -208,6 +372,14 @@ button[type="submit"]:hover {
   max-width: 100%;
   height: auto;
   margin-bottom: 15px;
+}
+
+.product-image {
+  max-width: 600px;
+  max-height: 600px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .product-card h3 {

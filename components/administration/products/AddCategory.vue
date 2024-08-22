@@ -1,20 +1,20 @@
 <template>
-  <div class="add-product-page">
-    <h1>Add New Product</h1>
+  <div class="add-category-page">
+    <h1>Add New Category</h1>
 
     <form
-      v-if="!productAdded"
+      v-if="!categoryAdded"
       @submit.prevent="validateForm"
       @paste="handlePaste"
       @dragover.prevent
       @drop.prevent="handleDrop"
     >
       <div class="form-group">
-        <label for="name">Product Name</label>
+        <label for="name">Category Name</label>
         <input
           type="text"
           id="name"
-          v-model="product.name"
+          v-model="category.name"
           required
           @input="validateName"
         />
@@ -22,84 +22,51 @@
       </div>
 
       <div class="form-group">
-        <label for="price">Product Price</label>
-        <input
-          type="text"
-          id="price"
-          v-model="product.price"
-          @input="validatePrice"
-          required
-        />
-        <span v-if="priceError" class="error">{{ priceError }}</span>
-      </div>
-
-      <div class="form-group">
-        <label for="category">Select Category</label>
-        <select v-model="product.categoryId" required>
-          <option v-for="category in categories" :value="category.id" :key="category.id">
-            {{ category.name }}
+        <label for="parentId">Select Parent Category</label>
+        <select v-model="category.parentId">
+          <option value="">No Parent (Root Category)</option>
+          <option v-for="parentCategory in categories" :value="parentCategory.id" :key="parentCategory.id">
+            {{ parentCategory.name }}
           </option>
         </select>
-        <span v-if="categoryError" class="error">{{ categoryError }}</span>
       </div>
 
       <div class="form-group">
-        <label for="image">Product Image (Base64)</label>
+        <label for="image">Category Image (Base64)</label>
         <div v-if="!imageBase64" class="dropzone">
           <input type="file" @change="onFileChange"/>
           <p>Drag and drop an image, paste it, or select a file.</p>
         </div>
         <div v-else>
-          <img :src="imageBase64" alt="Product Image" class="product-image"/>
+          <img :src="imageBase64" alt="Category Image" class="category-image"/>
           <button @click="removeImage">Remove Image</button>
         </div>
       </div>
 
-      <div class="properties">
-        <h3>Properties</h3>
-        <div v-for="(property, index) in properties" :key="index" class="property-group">
-          <input
-            type="text"
-            v-model="property.name"
-            placeholder="Property Name"
-            required
-            @input="validateProperty(index)"
-          />
-          <span> : </span>
-          <input
-            type="text"
-            v-model="property.description"
-            placeholder="Property Description"
-            required
-            @input="validateProperty(index)"
-          />
-          <button @click.prevent="removeProperty(index)">Remove</button>
-          <span v-if="propertyErrors[index]" class="error">{{ propertyErrors[index] }}</span>
-        </div>
-        <button @click.prevent="addProperty">Add Property</button>
-        <button @click="redirectToProducts">Go to Products List</button>
+      <div class="form-group">
+        <label for="description">Category Description</label>
+        <textarea
+          id="description"
+          v-model="category.description"
+          placeholder="Enter category description"
+        />
       </div>
 
-      <button type="submit">Add Product</button>
+      <button type="submit">Add Category</button>
       <span v-if="formError" class="error">{{ formError }}</span>
     </form>
 
-    <div v-else class="product-details">
-      <h2>Product Added Successfully!</h2>
-      <div class="product-card">
+    <div v-else class="category-details">
+      <h2>Category Added Successfully!</h2>
+      <div class="category-card">
         <img
-          :src="addedProduct.imageBase64.startsWith('data:image/') ? addedProduct.imageBase64 : `data:image/png;base64,${addedProduct.imageBase64}`"
-          alt="Product Image"/>
-        <h3>{{ addedProduct.name }}</h3>
-        <p><strong>ID:</strong> {{ addedProduct.id }}</p>
-        <p>Price: BYN{{ addedProduct.price }}</p>
-        <ul>
-          <li v-for="(property, index) in addedProduct.properties" :key="index">
-            {{ property }}
-          </li>
-        </ul>
-        <button @click="resetForm">Add Another Product</button>
-        <button @click="redirectToProducts">Go to Products List</button>
+          :src="addedCategory.imageBase64.startsWith('data:image/') ? addedCategory.imageBase64 : `data:image/png;base64,${addedCategory.imageBase64}`"
+          alt="Category Image"/>
+        <h3>{{ addedCategory.name }}</h3>
+        <p><strong>ID:</strong> {{ addedCategory.id }}</p>
+        <p>{{ addedCategory.description }}</p>
+        <button @click="resetForm">Add Another Category</button>
+        <button @click="redirectToCategories">Go to Categories List</button>
       </div>
     </div>
   </div>
@@ -112,26 +79,20 @@ export default {
   layout: 'admin',
   data() {
     return {
-      product: {
+      category: {
         name: '',
-        price: '',
+        parentId: '',
         imageBase64: '',
-        categoryId: '',  // Добавляем поле categoryId
+        description: '',
       },
-      categories: [], // Данные категорий
-      properties: [
-        {name: '', description: ''},
-      ],
-      productAdded: false,
-      addedProduct: null,
+      categories: [], // Данные существующих категорий
+      categoryAdded: false,
+      addedCategory: null,
       imageBase64: '',
       supportedFormats: ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'],
       maxWidth: 1280,
       maxHeight: 1024,
       nameError: null,
-      priceError: null,
-      categoryError: null,
-      propertyErrors: [],
       formError: null,
     };
   },
@@ -145,72 +106,41 @@ export default {
       }
     },
     validateName() {
-      if (!this.product.name) {
-        this.nameError = 'Product name is required.';
+      if (!this.category.name) {
+        this.nameError = 'Category name is required.';
       } else {
         this.nameError = null;
       }
     },
-    validatePrice() {
-      const price = this.product.price;
-      if (price === '') {
-        this.priceError = 'Price is required.';
-      } else if (!/^\d*\.?\d*$/.test(price)) {
-        this.priceError = 'Price must be a positive number.';
-      } else if (parseFloat(price) < 0) {
-        this.priceError = 'Price cannot be negative.';
-      } else {
-        this.priceError = null;
-      }
-    },
-    validateCategory() {
-      if (!this.product.categoryId) {
-        this.categoryError = 'Category selection is required.';
-      } else {
-        this.categoryError = null;
-      }
-    },
     validateForm() {
       this.validateName();
-      this.validatePrice();
-      this.validateCategory();
-      this.properties.forEach((_, index) => this.validateProperty(index));
 
-      if (this.nameError || this.priceError || this.categoryError || this.propertyErrors.some(error => error !== null)) {
+      if (this.nameError) {
         this.formError = 'Please fix the errors in the form before submitting.';
         return;
       }
 
       this.formError = null;
-      this.submitProduct();
+      this.submitCategory();
     },
-    async submitProduct() {
+    async submitCategory() {
       try {
-        const propertiesList = this.properties.map(
-          (prop) => `${prop.name} : ${prop.description}`
-        );
-
-        const product = {
-          ...this.product,
-          properties: propertiesList,
+        const category = {
+          ...this.category,
           imageBase64: this.imageBase64,
         };
 
-        console.log('Properties list created:', propertiesList);
+        const response = await this.$api.post('/categories', category);
 
-        const response = await this.$api.post('/products', product);
-
-        console.log('Product added successfully:', response.data);  // Добавляем вывод всех данных продукта
-
-        this.addedProduct = response.data;
-        this.productAdded = true;
+        this.addedCategory = response.data;
+        this.categoryAdded = true;
 
       } catch (error) {
-        console.error('Failed to add product:', error.message);
+        console.error('Failed to add category:', error.message);
       }
     },
-    redirectToProducts() {
-      this.$router.push('/admin/products');
+    redirectToCategories() {
+      this.$router.push('/admin/categories');
     },
     onFileChange(e) {
       const file = e.target.files[0];
@@ -282,15 +212,14 @@ export default {
       this.imageBase64 = '';
     },
     resetForm() {
-      this.product = {
+      this.category = {
         name: '',
-        price: '',
+        parentId: '',
         imageBase64: '',
-        categoryId: '',  // Очистка поля categoryId
+        description: '',
       };
-      this.properties = [{name: '', description: ''}];
-      this.productAdded = false;
-      this.addedProduct = null;
+      this.categoryAdded = false;
+      this.addedCategory = null;
       this.imageBase64 = '';
     },
   },
@@ -301,7 +230,7 @@ export default {
 </script>
 
 <style scoped>
-.add-product-page {
+.add-category-page {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -337,32 +266,12 @@ export default {
   cursor: pointer;
 }
 
-.properties {
-  margin-bottom: 20px;
-}
-
-.property-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.property-group input {
-  width: calc(50% - 10px);
-}
-
-.property-group button {
-  background-color: #e74c3c;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.property-group button:hover {
-  background-color: #c0392b;
+.category-image {
+  max-width: 600px;
+  max-height: 600px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .error {
@@ -385,11 +294,11 @@ button[type="submit"]:hover {
   background-color: #0056b3;
 }
 
-.product-details {
+.category-details {
   margin-top: 20px;
 }
 
-.product-card {
+.category-card {
   background: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -397,42 +306,23 @@ button[type="submit"]:hover {
   text-align: center;
 }
 
-.product-card img {
+.category-card img {
   max-width: 100%;
   height: auto;
   margin-bottom: 15px;
 }
 
-.product-image {
-  max-width: 600px;
-  max-height: 600px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-.product-card h3 {
+.category-card h3 {
   margin-bottom: 10px;
   font-size: 24px;
 }
 
-.product-card p {
+.category-card p {
   margin-bottom: 20px;
   font-size: 18px;
 }
 
-.product-card ul {
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.product-card li {
-  font-size: 16px;
-  margin-bottom: 5px;
-}
-
-.product-card button {
+.category-card button {
   padding: 10px 20px;
   background-color: #007bff;
   border: none;
@@ -442,7 +332,7 @@ button[type="submit"]:hover {
   font-size: 16px;
 }
 
-.product-card button:hover {
+.category-card button:hover {
   background-color: #0056b3;
 }
 </style>

@@ -16,6 +16,15 @@
       </div>
     </div>
 
+    <div class="category-list">
+      <h2>Categories</h2>
+      <ul>
+        <li v-for="category in categories" :key="category.id" @click="selectCategory(category.id)">
+          {{ category.name }}
+        </li>
+      </ul>
+    </div>
+
     <div v-if="filteredProducts.length">
       <ul class="product-list">
         <li v-for="product in filteredProducts" :key="product.id">
@@ -34,15 +43,30 @@ export default {
   data() {
     return {
       searchQuery: '',
-      products: [
-        {id: 1, name: 'Product 1'},
-        {id: 2, name: 'Product 2'},
-        {id: 3, name: 'Product 3'},
-      ],
+      categories: [],
+      selectedCategoryId: '',
+      products: [],
       filteredProducts: [],
     };
   },
   methods: {
+    async fetchCategories() {
+      try {
+        const response = await this.$api.get('/categories/search/all');
+        this.categories = response.data;
+      } catch (error) {
+        console.error('Failed to fetch categories:', error.message);
+      }
+    },
+    async fetchProductsByCategory(categoryId) {
+      try {
+        const response = await this.$api.get(`/products/search/category?categoryId=${categoryId}`);
+        this.products = response.data;
+        this.filteredProducts = this.products;
+      } catch (error) {
+        console.error('Failed to fetch products:', error.message);
+      }
+    },
     addProduct() {
       this.$router.push('/admin/products/add-product');
     },
@@ -51,9 +75,13 @@ export default {
         product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
+    selectCategory(categoryId) {
+      this.selectedCategoryId = categoryId;
+      this.fetchProductsByCategory(categoryId);
+    },
   },
-  mounted() {
-    this.filteredProducts = this.products;
+  async mounted() {
+    await this.fetchCategories();
   },
 };
 </script>
@@ -105,6 +133,25 @@ button:hover {
   padding: 8px;
   border-radius: 4px;
   border: 1px solid #ccc;
+}
+
+.category-list {
+  margin-bottom: 20px;
+}
+
+.category-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.category-list li {
+  cursor: pointer;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.category-list li:hover {
+  background-color: #f1f1f1;
 }
 
 .product-list {
